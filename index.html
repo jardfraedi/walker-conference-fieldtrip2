@@ -152,7 +152,10 @@ fetch('data/stops.geojson')
 					: '') +
 
 				(p.photo ?
-					'<img src="' + p.photo + '" style="width:250px;(p.link ?
+					'<img src="' + p.photo + '" style="width:250px;
+					)+
+				
+				(p.link ?
 					'<p>' + p.link + 'Read More</a></p>'
 					: '');
 
