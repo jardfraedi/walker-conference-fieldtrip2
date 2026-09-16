@@ -146,19 +146,18 @@ fetch('data/stops.geojson')
                     : '') +
 
                 (p.photo ?
-                    '<img src="' + p.photo +
-                    '" style="width:250px;max-width:100%;"><br><br>'
-                    : '') +
+					'<img src="' + p.photo +
+					'" style="width:250px;max-width:100%; '<p><a href="' + p.link +
+					'" target="_blank">Read More</a></p>' +
 
-                (p.details ?
-                    '<p>' + p.details + '</p>'
-                    : '') +
-
-                (p.citation ?
-                    '<p><b>Citation:</b><br>' +
-                    p.citation +
-                    '</p>'
-                    : '');
+                '<details>' +
+				'<summary>More details</summary>' +
+				'<p>' + p.details + '</p>' +
+				'<p>' + p.citation + '</p>' +
+				(p.paper_link ?
+				'<p><a href="' + p.paper_link +
+				'" target="_blank">Read
+				'</details>';
 
             layer.bindPopup(popupHtml);
 
