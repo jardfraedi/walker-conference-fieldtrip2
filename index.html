@@ -153,14 +153,13 @@ fetch('data/stops.geojson')
                     : '') +
 
                 (p.photo ?
-                    '' + p.photo +
-                    '<br><br>'
-                    : '') +
+                    '<img src="' + p.photo +
+					'" : '') +
 
                 (p.link ?
-                    '<p>' + p.link +
-                    'Read More</a></p>'
-                    : '');
+					'<p><a href="' + p.link +
+					'" target'
+					: '');
 
             layer.bindPopup(popupHtml);
 
