@@ -26,6 +26,19 @@ html, body, #map {
     overflow-y: auto;
 }
 
+layer.bindPopup(popupHtml, {
+    minWidth: 250,
+    maxWidth: 350,
+    maxHeight: 400
+})
+
+.popup-photo {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: 6px;
+}
+
 
 </style>
 
@@ -152,11 +165,12 @@ fetch('data/stops.geojson')
 					: '') +
 
 				(p.photo ?
-					'<img src="' + p.photo + '" style="width:250px;
+					'<img src="' + p.photo + '" class="popup-photo" alt="'
 					)+
 				
 				(p.link ?
-					'<p>' + p.link + 'Read More</a></p>'
+					'<p><a href="' + p.link +
+					'" target="_blank" rel="noopener noreferrer">Read More</a></p>'
 					: '');
 
             layer.bindPopup(popupHtml);
