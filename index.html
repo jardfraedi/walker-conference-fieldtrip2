@@ -64,7 +64,7 @@ fetch('data/stops.geojson')
   .then(response => response.json())
   .then(data => {
 
-   const stops = L.geoJSON(data, {
+const stops = L.geoJSON(data, {
 
   pointToLayer: function(feature, latlng) {
     return L.circleMarker(latlng, {
@@ -122,7 +122,7 @@ map.on('locationfound', function(e) {
   }).addTo(map);
 
 });
-
+});
 </script>
 
 </body>
