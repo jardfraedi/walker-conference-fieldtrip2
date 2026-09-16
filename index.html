@@ -165,17 +165,18 @@ fetch('data/stops.geojson')
 					: '') +
 
 				(p.photo ?
-					'<img src="' + p.photo + '" class="popup-photo" alt="'
-					)+
-				
-				(p.link ?
+					'<img src="' + p.photo +
+					'" class="popup-.link ?
 					'<p><a href="' + p.link +
-					'" target="_blank" rel="noopener noreferrer">Read More</a></p>'
-					: '');
+				re</a></p>'
+			: '');
 
-            layer.bindPopup(popupHtml);
+layer.bindPopup(popupHtml, {
+    minWidth: 250,
+    maxWidth: 350,
+    maxHeight: 400
+});
 
-        }
 
     }).addTo(map);
 
