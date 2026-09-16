@@ -31,6 +31,35 @@ L.tileLayer(
   }
 ).addTo(map);
 
+fetch('data/geology.geojson')
+.then(response => response.json())
+.then(data => {
+
+    L.geoJSON(data, {
+
+        style: function(feature) {
+
+            return {
+                color: '#222222',
+                weight: 1,
+                fillColor: feature.properties.color,
+                fillOpacity: 0.5
+            };
+        },
+
+        onEachFeature: function(feature, layer) {
+
+            layer.bindPopup(
+                '<h3>' + feature.properties.unit + '</h3>' +
+                '<p>' + feature.properties.age + '</p>'
+            );
+
+        }
+
+    }).addTo(map);
+
+});
+
 fetch('data/stops.geojson')
   .then(response => response.json())
   .then(data => {
