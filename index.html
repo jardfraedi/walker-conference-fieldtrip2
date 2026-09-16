@@ -2,18 +2,29 @@
 <html>
 <head>
 <meta charset="utf-8">
-<title>Field Trip Map</title>
+<title>East Iceland Geological Field Trip</title>
 
-<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 
 <style>
+
 html, body, #map {
     height: 100%;
     margin: 0;
 }
+
+.legend {
+    background: white;
+    padding: 10px;
+    border-radius: 5px;
+    line-height: 1.5;
+    box-shadow: 0 0 5px rgba(0,0,0,0.3);
+}
+
 </style>
 
 </head>
+
 <body>
 
 <div id="map"></div>
@@ -25,118 +36,218 @@ html, body, #map {
 const map = L.map('map').setView([64.8, -14.5], 8);
 
 L.tileLayer(
-  'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-  {
-    attribution: '&copy; OpenStreetMap contributors'
-  }
+    'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+    {
+        attribution: '&copy; OpenStreetMap contributors'
+    }
 ).addTo(map);
+
+let geologyLayer;
+let stopsLayer;
+let userMarker;
+
+/* ============================
+   GEOLOGY
+============================ */
 
 fetch('data/askewetal-geology.geojson')
 .then(response => response.json())
 .then(data => {
 
-    L.geoJSON(data, {
+    geologyLayer = L.geoJSON(data, {
 
-        style: function(feature) {
+        style: function(feature){
 
-			let rock = feature.properties.rock_type;
+            let rock = feature.properties.rock_type;
 
-			let color = '#cccccc';
+            let color = '#cccccc';
 
-			if (rock === 'Granite') color = '#ff6666';
-			if (rock === 'Felsite') color = '#ffcc66';
-			if (rock === 'Basalt') color = '#8ecae6';
-			if (rock === 'Rhyolite') color = '#ff99cc';
-			if (rock === 'Gabbro') color = '#66aa66';
+            if (rock === 'Basalt') color = '#8ecae6';
+            if (rock === 'Granite') color = '#ff6666';
+            if (rock === 'Felsite') color = '#ffcc66';
+            if (rock === 'Rhyolite') color = '#ff99cc';
+            if (rock === 'Gabbro') color = '#66aa66';
 
-			return {
-				color: '#222222',
-				weight: 1,
-				fillColor: color,
-				fillOpacity: 0.5
-			};
+            return {
+                color: '#555555',
+                weight: 0.5,
+                fillColor: color,
+                fillOpacity: 0.65
+            };
 
-		},
+        },
 
-
-        onEachFeature: function(feature, layer) {
+        onEachFeature: function(feature, layer){
 
             layer.bindPopup(
-				'<h3>' + feature.properties.name_unit + '</h3>' +
-				'<p><b>Rock type:</b> ' + feature.properties.rock_type_unit + '</p>' +
-				'<p><b>Age:</b> ' + feature.properties.geological_age + '</p>' +
-				'<p>' + feature.properties.citation + '</p>'
-			);
+                '<h3>' + feature.properties.name_unit + '</h3>' +
+                '<p><b>Rock type:</b> ' +
+                feature.properties.rock_type_unit + '</p>' +
+
+                '<p><b>Age:</b> ' +
+                feature.properties.geological_age + '</p>' +
+
+                '<p><b>Citation:</b> ' +
+                feature.properties.citation + '</p>'
+            );
 
         }
 
     }).addTo(map);
 
+    geologyLayer.bringToBack();
+
+    addLayerControl();
+
 });
+
+/* ============================
+   FIELD STOPS
+============================ */
 
 fetch('data/stops.geojson')
-  .then(response => response.json())
-  .then(data => {
+.then(response => response.json())
+.then(data => {
 
-const stops = L.geoJSON(data, {
+    stopsLayer = L.geoJSON(data, {
 
-  pointToLayer: function(feature, latlng) {
-    return L.circleMarker(latlng, {
-      radius: 6,
-      fillColor: "#d73027",
-      color: "#000",
-      weight: 1,
-      opacity: 1,
-      fillOpacity: 0.9
-    });
-  },
+        pointToLayer: function(feature, latlng){
 
-  onEachFeature: function(feature, layer) {
+            return L.circleMarker(latlng, {
+                radius: 7,
+                fillColor: '#d73027',
+                color: '#000000',
+                weight: 1,
+                fillOpacity: 1
+            });
 
-    let p = feature.properties;
+        },
 
-    layer.bindTooltip(
-      p.locality_name,
-      {
-        permanent: true,
-        direction: 'right',
-        offset: [10, 0]
-      }
-    );
+        onEachFeature: function(feature, layer){
 
-    layer.bindPopup(
-      '<h3>' + p.locality_name + '</h3>' +
-      '<p>' + p.summary + '</p>'
-    );
-  }
+            let p = feature.properties;
 
-}).addTo(map);
+            layer.bindTooltip(
+                p.locality_name,
+                {
+                    permanent: true,
+                    direction: 'right',
+                    offset: [10,0]
+                }
+            );
 
-map.fitBounds(stops.getBounds());
+            let popupHtml =
+                '<h3>' + p.locality_name + '</h3>' +
 
-let userMarker;
+                '<p><b>' + p.summary + '</b></p>' +
+
+                (p.age ?
+                    '<p><b>Age:</b> ' + p.age + '</p>'
+                    : '') +
+
+                (p.photo ?
+                    '<img src="' + p.photo +
+                    '" style="width:250px;max-width:100%;"><br><br>'
+                    : '') +
+
+                (p.details ?
+                    '<p>' + p.details + '</p>'
+                    : '') +
+
+                (p.citation ?
+                    '<p><b>Citation:</b><br>' +
+                    p.citation +
+                    '</p>'
+                    : '');
+
+            layer.bindPopup(popupHtml);
+
+        }
+
+    }).addTo(map);
+
+    map.fitBounds(stopsLayer.getBounds());
+
+    addLayerControl();
+
+});
+
+
+/* ============================
+   GPS
+============================ */
 
 map.locate({
-  watch: true,
-  enableHighAccuracy: true
+    watch: true,
+    enableHighAccuracy: true
 });
 
-map.on('locationfound', function(e) {
+map.on('locationfound', function(e){
 
-  if (userMarker) {
-    map.removeLayer(userMarker);
-  }
+    if(userMarker){
+        map.removeLayer(userMarker);
+    }
 
-  userMarker = L.circleMarker(e.latlng, {
-    radius: 8,
-    fillColor: '#0078ff',
-    color: '#ffffff',
-    weight: 2,
-    fillOpacity: 1
-  }).addTo(map);
+    userMarker = L.circleMarker(e.latlng,{
+        radius: 8,
+        fillColor: '#0078ff',
+        color: '#ffffff',
+        weight: 2,
+        fillOpacity: 1
+    }).addTo(map);
 
 });
-});
+
+
+/* ============================
+   LAYER CONTROL
+============================ */
+
+let layerControlAdded = false;
+
+function addLayerControl(){
+
+    if(layerControlAdded) return;
+
+    if(geologyLayer && stopsLayer){
+
+        L.control.layers(
+            null,
+            {
+                "Geology": geologyLayer,
+                "Field Stops": stopsLayer
+            }
+        ).addTo(map);
+
+        layerControlAdded = true;
+    }
+
+}
+
+
+/* ============================
+   LEGEND
+============================ */
+
+var legend = L.control({position: 'bottomright'});
+
+legend.onAdd = function(){
+
+    var div = L.DomUtil.create('div','legend');
+
+    div.innerHTML =
+        '<b>Rock Types</b><br>' +
+        '<span style="color:#8ecae6">■</span> Basalt<br>' +
+        '<span style="color:#ff6666">■</span> Granite<br>' +
+        '<span style="color:#ffcc66">■</span> Felsite<br>' +
+        '<span style="color:#ff99cc">■</span> Rhyolite<br>' +
+        '<span style="color:#66aa66">■</span> Gabbro';
+
+    return div;
+};
+
+legend.addTo(map);
+
 </script>
 
 </body>
