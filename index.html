@@ -142,41 +142,24 @@ fetch('data/stops.geojson')
                 }
             );
 
-            let popupHtml =
 
-				'<h3>' + p.locality_name + '</h3>' +
+let popupHtml =
 
-				'<p><b>' + p.summary + '</b></p>' +
+    '<h3>' + p.locality_name + '</h3>' +
 
-				(p.age ?
-				'<p><b>Age:</b> ' + p.age + '</p>'
-				: '') +
+    '<p><b>' + p.summary + '</b></p>' +
 
-				(p.photo ?
-					'<img src="' + p.photo +
-					'" style="width:250px;max-width:100%;"><brp><a href="' + p.link +
-					'"/a></p>'
-					: '') +
+    (p.age ?
+        '<p><b>Age:</b> ' + p.age + '</p>'
+        : '') +
 
-				'<details>' +
-				'<summary>More details</summary>' +
+    (p.photo ?
+        '<img src="' + p.photo +
+        '"       : '') +
 
-				(p.details ?
-					'<p>' + p.details + '</p>'
-					: '') +
-
-				(p.citation ?
-					'<p><b>Citation:</b><br>' +
-					p.citation +
-					'</p>'
-					: '') +
-
-				(p.paper_link ?
-					'<p>' + p.paper_link +
-					'Read Paper</a></p>'
-					: '') +
-
-				'</details>';
+    (p.link ?
+        '<p><a href="' + p       'Read More</a></p>'
+        : '');
 
             layer.bindPopup(popupHtml);
 
@@ -189,7 +172,7 @@ fetch('data/stops.geojson')
     addLayerControl();
 
 });
-`
+
 
 
 /* ============================
