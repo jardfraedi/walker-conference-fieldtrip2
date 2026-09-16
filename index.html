@@ -141,24 +141,20 @@ fetch('data/stops.geojson')
                     offset: [10,0]
                 }
             );
+			
+			let popupHtml =
+				'<h3>' + p.locality_name + '</h3>' +
 
-            let popupHtml =
+				'<p><b>' + p.summary + '</b></p>' +
 
-                '<h3>' + p.locality_name + '</h3>' +
+				(p.age ?
+					'<p><b>Age:</b> ' + p.age + '</p>'
+					: '') +
 
-                '<p><b>' + p.summary + '</b></p>' +
-
-                (p.age ?
-                    '<p><b>Age:</b> ' + p.age + '</p>'
-                    : '') +
-
-                (p.photo ?
-                    '' + p.photo + '<br><br>'
-                    : '') +
-
-                (p.link ?
-                    '<p>' + p.link + 'Read More</a></p>'
-                    : '');
+				(p.photo ?
+					'<img src="' + p.photo + '" style="width:250px;(p.link ?
+					'<p>' + p.link + 'Read More</a></p>'
+					: '');
 
             layer.bindPopup(popupHtml);
 
