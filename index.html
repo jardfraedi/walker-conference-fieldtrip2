@@ -31,6 +31,27 @@ L.tileLayer(
   }
 ).addTo(map);
 
+fetch('data/stops.geojson')
+  .then(response => response.json())
+  .then(data => {
+
+    L.geoJSON(data, {
+
+      onEachFeature: function(feature, layer) {
+
+        let p = feature.properties;
+
+        layer.bindPopup(
+          '<h3>' + p.locality_name + '</h3>' +
+          '<p>' + p.summary + '</p>'
+        );
+
+      }
+
+    }).addTo(map);
+
+  });
+
 </script>
 
 </body>
