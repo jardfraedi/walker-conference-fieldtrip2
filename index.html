@@ -137,6 +137,7 @@ fetch('data/stops.geojson')
             );
 
             let popupHtml =
+
                 '<h3>' + p.locality_name + '</h3>' +
 
                 '<p><b>' + p.summary + '</b></p>' +
@@ -146,18 +147,34 @@ fetch('data/stops.geojson')
                     : '') +
 
                 (p.photo ?
-					'<img src="' + p.photo +
-					'" style="width:250px;max-width:100%; '<p><a href="' + p.link +
-					'" target="_blank">Read More</a></p>' +
+                    '' + p.photo +
+                    '<br><br>'
+                    : '') +
+
+                (p.link ?
+                    '<p><a  p.link +
+                    'Read More</a></p>'
+                    : '') +
 
                 '<details>' +
-				'<summary>More details</summary>' +
-				'<p>' + p.details + '</p>' +
-				'<p>' + p.citation + '</p>' +
-				(p.paper_link ?
-				'<p><a href="' + p.paper_link +
-				'" target="_blank">Read
-				'</details>';
+                    '<summary>More details</summary>' +
+
+                    (p.details ?
+                        '<p>' + p.details + '</p>'
+                        : '') +
+
+                    (p.citation ?
+                        '<p><b>Citation:</b><br>' +
+                        p.citation +
+                        '</p>'
+                        : '') +
+
+                    (p.paper_link ?
+                        '<p>' + p.paper_link +
+                        'Read Paper</a></p>'
+                        : '') +
+
+                '</details>';
 
             layer.bindPopup(popupHtml);
 
@@ -170,6 +187,7 @@ fetch('data/stops.geojson')
     addLayerControl();
 
 });
+`
 
 
 /* ============================
