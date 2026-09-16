@@ -153,14 +153,12 @@ fetch('data/stops.geojson')
                     : '') +
 
                 (p.photo ?
-					'<img src="' + p.photo +
-					'" style="width:250px;max-width:100%;"><br><br>'
-					:
+                    '' + p.photo + '<br><br>'
+                    : '') +
 
                 (p.link ?
-					'<p><a href="' + p.link +
-					'"/a></p>'
-					: '')
+                    '<p>' + p.link + 'Read More</a></p>'
+                    : '');
 
             layer.bindPopup(popupHtml);
 
@@ -173,8 +171,7 @@ fetch('data/stops.geojson')
     addLayerControl();
 
 });
-
-
+`
 
 
 /* ============================
