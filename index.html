@@ -42,7 +42,7 @@ fetch('data/geology.geojson')
             return {
                 color: '#222222',
                 weight: 1,
-                fillColor: feature.properties.color,
+                fillColor: '#ff8800',
                 fillOpacity: 0.5
             };
         },
@@ -50,9 +50,10 @@ fetch('data/geology.geojson')
         onEachFeature: function(feature, layer) {
 
             layer.bindPopup(
-                '<h3>' + feature.properties.unit + '</h3>' +
-                '<p>' + feature.properties.age + '</p>'
-            );
+				'<h3>' + feature.properties.name_unit + '</h3>' +
+				'<p><b>Rock type:</b> ' + feature.properties.rock_type_unit + '</p>' +
+				'<p><b>Age:</b> ' + feature.properties.geological_age + '</p>'
+			);
 
         }
 
