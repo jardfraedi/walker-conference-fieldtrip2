@@ -1,84 +1,84 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta charset="utf-8">
-<title>East Iceland Geological Field Trip</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>East Iceland Geological Field Trip</title>
 
-<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 
-<style>
+  <style>
+    html, body, #map {
+      height: 100%;
+      margin: 0;
+    }
 
-html, body, #map {
-    height: 100%;
-    margin: 0;
-}
+    .legend {
+      background: white;
+      padding: 10px;
+      border-radius: 5px;
+      line-height: 1.5;
+      box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+    }
 
-.legend {
-    background: white;
-    padding: 10px;
-    border-radius: 5px;
-    line-height: 1.5;
-    box-shadow: 0 0 5px rgba(0,0,0,0.3);
-}
+    .leaflet-popup-content {
+      max-height: 350px;
+      overflow-y: auto;
+    }
 
-.leaflet-popup-content {
-    max-height: 350px;
-    overflow-y: auto;
-}
-
-layer.bindPopup(popupHtml, {
-    minWidth: 250,
-    maxWidth: 350,
-    maxHeight: 400
-})
-
-.popup-photo {
-    display: block;
-    width: 100%;
-    height: auto;
-    border-radius: 6px;
-}
-
-
-</style>
-
+    .popup-photo {
+      display: block;
+      width: 100%;
+      height: auto;
+      border-radius: 6px;
+    }
+  </style>
 </head>
 
 <body>
+  <div id="map"></div>
 
-<div id="map"></div>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    const map = L.map('map').setView([64.8, -14.5], 8);
 
-<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors',
+      maxZoom: 19
+    }).addTo(map);
 
-<script>
+    let geologyLayer;
+    let stopsLayer;
+    let userMarker;
+    let layerControlAdded = false;
 
-const map = L.map('map').setView([64.8, -14.5], 8);
+    function addLayerControl() {
+      if (layerControlAdded) return;
 
-L.tileLayer(
-    'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-    {
-        attribution: '&copy; OpenStreetMap contributors'
+      if (geologyLayer && stopsLayer) {
+        L.control.layers(null, {
+          'Geology': geologyLayer,
+          'Field Stops': stopsLayer
+        }).addTo(map);
+
+        layerControlAdded = true;
+      }
     }
-).addTo(map);
 
-let geologyLayer;
-let stopsLayer;
-let userMarker;
+    function safeValue(value, fallback = '') {
+      return value === null || value === undefined ? fallback : value;
+    }
 
-/* ============================
-   GEOLOGY
-============================ */
-
-fetch('data/askewetal-geology.geojson')
-.then(response => response.json())
-.then(data => {
-
-    geologyLayer = L.geoJSON(data, {
-
-        style: function(feature){
-
-            let rock = feature.properties.rock_type;
-
+    /* GEOLOGY */
+    fetch('data/askewetal-geology.geojson')
+      .then(response => {
+        if (!response.ok) throw new Error('Geology file not found: ' + response.status);
+        return response.json();
+      })
+      .then(data => {
+        geologyLayer = L.geoJSON(data, {
+          style: function(feature) {
+            const rock = feature.properties.rock_type;
             let color = '#cccccc';
 
             if (rock === 'Basalt') color = '#8ecae6';
@@ -88,181 +88,126 @@ fetch('data/askewetal-geology.geojson')
             if (rock === 'Gabbro') color = '#66aa66';
 
             return {
-                color: '#555555',
-                weight: 0.5,
-                fillColor: color,
-                fillOpacity: 0.65
+              color: '#555555',
+              weight: 0.5,
+              fillColor: color,
+              fillOpacity: 0.65
             };
+          },
 
-        },
+          onEachFeature: function(feature, layer) {
+            const p = feature.properties;
+            const popupHtml =
+              '<h3>' + safeValue(p.name_unit, 'Geological unit') + '</h3>' +
+              '<p><b>Rock type:</b> ' + safeValue(p.rock_type_unit, 'Unknown') + '</p>' +
+              '<p><b>Age:</b> ' + safeValue(p.geological_age, 'Unknown') + '</p>' +
+              (p.citation ? '<p><b>Citation:</b> ' + p.citation + '</p>' : '');
 
-        onEachFeature: function(feature, layer){
+            layer.bindPopup(popupHtml);
+          }
+        }).addTo(map);
 
-            layer.bindPopup(
-                '<h3>' + feature.properties.name_unit + '</h3>' +
-                '<p><b>Rock type:</b> ' +
-                feature.properties.rock_type_unit + '</p>' +
+        geologyLayer.bringToBack();
+        addLayerControl();
+      })
+      .catch(error => console.error(error));
 
-                '<p><b>Age:</b> ' +
-                feature.properties.geological_age + '</p>' +
-
-                '<p><b>Citation:</b> ' +
-                feature.properties.citation + '</p>'
-            );
-
-        }
-
-    }).addTo(map);
-
-    geologyLayer.bringToBack();
-
-    addLayerControl();
-
-});
-
-/* ============================
-   FIELD STOPS
-============================ */
-
-fetch('data/stops.geojson')
-.then(response => response.json())
-.then(data => {
-
-    stopsLayer = L.geoJSON(data, {
-
-        pointToLayer: function(feature, latlng){
-
+    /* FIELD STOPS */
+    fetch('data/stops.geojson')
+      .then(response => {
+        if (!response.ok) throw new Error('Stops file not found: ' + response.status);
+        return response.json();
+      })
+      .then(data => {
+        stopsLayer = L.geoJSON(data, {
+          pointToLayer: function(feature, latlng) {
             return L.circleMarker(latlng, {
-                radius: 7,
-                fillColor: '#d73027',
-                color: '#000000',
-                weight: 1,
-                fillOpacity: 1
+              radius: 7,
+              fillColor: '#d73027',
+              color: '#000000',
+              weight: 1,
+              fillOpacity: 1
+            });
+          },
+
+          onEachFeature: function(feature, layer) {
+            const p = feature.properties;
+
+            layer.bindTooltip(safeValue(p.locality_name, 'Field stop'), {
+              permanent: true,
+              direction: 'right',
+              offset: [10, 0]
             });
 
-        },
+            let popupHtml =
+              '<h3>' + safeValue(p.locality_name, 'Field stop') + '</h3>' +
+              (p.summary ? '<p><b>' + p.summary + '</b></p>' : '') +
+              (p.age ? '<p><b>Age:</b> ' + p.age + '</p>' : '') +
+              (p.photo
+                ? '<img src="' + p.photo + '" class="popup-photo" alt="' +
+                  safeValue(p.locality_name, 'Field stop photograph') + '">'
+                : '') +
+              (p.link
+                ? '<p><a href="' + p.link +
+                  '" target="_blank" rel="noopener noreferrer">Read More</a></p>'
+                : '');
 
-        onEachFeature: function(feature, layer){
+            layer.bindPopup(popupHtml, {
+              minWidth: 250,
+              maxWidth: 350,
+              maxHeight: 400
+            });
+          }
+        }).addTo(map);
 
-            let p = feature.properties;
+        if (stopsLayer.getBounds().isValid()) {
+          map.fitBounds(stopsLayer.getBounds(), { padding: [20, 20] });
+        }
 
-            layer.bindTooltip(
-                p.locality_name,
-                {
-                    permanent: true,
-                    direction: 'right',
-                    offset: [10,0]
-                }
-            );
-			
-			let popupHtml =
-				'<h3>' + p.locality_name + '</h3>' +
+        addLayerControl();
+      })
+      .catch(error => console.error(error));
 
-				'<p><b>' + p.summary + '</b></p>' +
+    /* GPS */
+    map.locate({
+      watch: true,
+      enableHighAccuracy: true
+    });
 
-				(p.age ?
-					'<p><b>Age:</b> ' + p.age + '</p>'
-					: '') +
+    map.on('locationfound', function(e) {
+      if (userMarker) {
+        userMarker.setLatLng(e.latlng);
+      } else {
+        userMarker = L.circleMarker(e.latlng, {
+          radius: 8,
+          fillColor: '#0078ff',
+          color: '#ffffff',
+          weight: 2,
+          fillOpacity: 1
+        }).addTo(map);
+      }
+    });
 
-				(p.photo ?
-					'<img src="' + p.photo +
-					'" class="popup-.link ?
-					'<p><a href="' + p.link +
-				re</a></p>'
-			: '');
+    map.on('locationerror', function(e) {
+      console.warn('Location unavailable: ' + e.message);
+    });
 
-layer.bindPopup(popupHtml, {
-    minWidth: 250,
-    maxWidth: 350,
-    maxHeight: 400
-});
+    /* LEGEND */
+    const legend = L.control({ position: 'bottomright' });
 
-
-    }).addTo(map);
-
-    map.fitBounds(stopsLayer.getBounds());
-
-    addLayerControl();
-
-});
-
-
-/* ============================
-   GPS
-============================ */
-
-map.locate({
-    watch: true,
-    enableHighAccuracy: true
-});
-
-map.on('locationfound', function(e){
-
-    if(userMarker){
-        map.removeLayer(userMarker);
-    }
-
-    userMarker = L.circleMarker(e.latlng,{
-        radius: 8,
-        fillColor: '#0078ff',
-        color: '#ffffff',
-        weight: 2,
-        fillOpacity: 1
-    }).addTo(map);
-
-});
-
-
-/* ============================
-   LAYER CONTROL
-============================ */
-
-let layerControlAdded = false;
-
-function addLayerControl(){
-
-    if(layerControlAdded) return;
-
-    if(geologyLayer && stopsLayer){
-
-        L.control.layers(
-            null,
-            {
-                "Geology": geologyLayer,
-                "Field Stops": stopsLayer
-            }
-        ).addTo(map);
-
-        layerControlAdded = true;
-    }
-
-}
-
-
-/* ============================
-   LEGEND
-============================ */
-
-var legend = L.control({position: 'bottomright'});
-
-legend.onAdd = function(){
-
-    var div = L.DomUtil.create('div','legend');
-
-    div.innerHTML =
+    legend.onAdd = function() {
+      const div = L.DomUtil.create('div', 'legend');
+      div.innerHTML =
         '<b>Rock Types</b><br>' +
-        '<span style="color:#8ecae6">■</span> Basalt<br>' +
-        '<span style="color:#ff6666">■</span> Granite<br>' +
-        '<span style="color:#ffcc66">■</span> Felsite<br>' +
-        '<span style="color:#ff99cc">■</span> Rhyolite<br>' +
-        '<span style="color:#66aa66">■</span> Gabbro';
+        '<span style="color:#8ecae6">&#9632;</span> Basalt<br>' +
+        '<span style="color:#ff6666">&#9632;</span> Granite<br>' +
+        '<span style="color:#ffcc66">&#9632;</span> Felsite<br>' +
+        '<span style="color:#ff99cc">&#9632;</span> Rhyolite<br>' +
+        '<span style="color:#66aa66">&#9632;</span> Gabbro';
+      return div;
+    };
 
-    return div;
-};
-
-legend.addTo(map);
-
-</script>
-
+    legend.addTo(map);
+  </script>
 </body>
 </html>
