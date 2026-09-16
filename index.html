@@ -144,42 +144,39 @@ fetch('data/stops.geojson')
 
             let popupHtml =
 
-                '<h3>' + p.locality_name + '</h3>' +
+				'<h3>' + p.locality_name + '</h3>' +
 
-                '<p><b>' + p.summary + '</b></p>' +
+				'<p><b>' + p.summary + '</b></p>' +
 
-                (p.age ?
-                    '<p><b>Age:</b> ' + p.age + '</p>'
-                    : '') +
+				(p.age ?
+				'<p><b>Age:</b> ' + p.age + '</p>'
+				: '') +
 
-                (p.photo ?
-                    '' + p.photo +
-                    '<br><br>'
-                    : '') +
-
-                (p.link ?
-					'<p><a hrefink + 'Read More</a></p>'
+				(p.photo ?
+					'<img src="' + p.photo +
+					'" style="width:250px;max-width:100%;"><brp><a href="' + p.link +
+					'"/a></p>'
 					: '') +
 
-                '<details>' +
-                    '<summary>More details</summary>' +
+				'<details>' +
+				'<summary>More details</summary>' +
 
-                    (p.details ?
-                        '<p>' + p.details + '</p>'
-                        : '') +
+				(p.details ?
+					'<p>' + p.details + '</p>'
+					: '') +
 
-                    (p.citation ?
-                        '<p><b>Citation:</b><br>' +
-                        p.citation +
-                        '</p>'
-                        : '') +
+				(p.citation ?
+					'<p><b>Citation:</b><br>' +
+					p.citation +
+					'</p>'
+					: '') +
 
-                    (p.paper_link ?
-                        '<p>' + p.paper_link +
-                        'Read Paper</a></p>'
-                        : '') +
+				(p.paper_link ?
+					'<p>' + p.paper_link +
+					'Read Paper</a></p>'
+					: '') +
 
-                '</details>';
+				'</details>';
 
             layer.bindPopup(popupHtml);
 
